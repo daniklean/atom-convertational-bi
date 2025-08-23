@@ -5,7 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Loader2, FileText, File, Table } from "lucide-react"
+import { Loader2, FileText, File, Table, Settings } from "lucide-react"
 
 interface Integration {
   id: string
@@ -237,12 +237,15 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="font-montserrat font-bold text-xl">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto bg-card border-border shadow-2xl">
+        <DialogHeader className="pb-4">
+          <DialogTitle className="font-montserrat font-bold text-2xl text-foreground flex items-center gap-3">
+            <div className="w-8 h-8 rounded-full gradient-atom flex items-center justify-center">
+              <Settings className="h-4 w-4 text-white" />
+            </div>
             {showFileSelection ? "Seleccionar archivo de Google Drive" : "Integraciones"}
           </DialogTitle>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-sm text-muted-foreground font-inter leading-relaxed">
             {showFileSelection
               ? "Elige el archivo que deseas usar como fuente de datos para tus análisis."
               : "Configura tus integraciones para realizar conexiones entre cada conversación y tus CRM de preferencia."}
@@ -251,8 +254,14 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
 
         {showFileSelection ? (
           <div className="space-y-4 mt-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Button variant="outline" size="sm" onClick={handleBackToIntegrations} disabled={uploadingFile}>
+            <div className="flex items-center gap-2 mb-6">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleBackToIntegrations}
+                disabled={uploadingFile}
+                className="border-atom text-atom-primary hover:bg-atom-light bg-transparent"
+              >
                 ← Volver
               </Button>
             </div>
@@ -265,13 +274,16 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
             ) : (
               <div className="space-y-3">
                 {driveFiles.map((file) => (
-                  <Card key={file.id} className="border-border hover:border-primary/50 transition-colors">
+                  <Card
+                    key={file.id}
+                    className="border-border hover:border-atom/50 transition-all duration-200 hover:shadow-md"
+                  >
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
                           {getFileIcon(file.mimeType)}
                           <div>
-                            <p className="font-medium text-sm">{file.name}</p>
+                            <p className="font-medium text-sm font-inter">{file.name}</p>
                             <p className="text-xs text-muted-foreground">
                               {file.size} • {new Date(file.modifiedTime).toLocaleDateString()}
                             </p>
@@ -281,7 +293,7 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
                           size="sm"
                           onClick={() => handleFileSelect(file)}
                           disabled={uploadingFile}
-                          className="bg-primary hover:bg-primary/90"
+                          className="gradient-atom hover:opacity-90 font-medium"
                         >
                           {uploadingFile ? (
                             <>
@@ -297,7 +309,7 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
                   </Card>
                 ))}
 
-                {driveFiles.length === 0 && (
+                {!loadingFiles && driveFiles.length === 0 && (
                   <div className="text-center py-8 text-muted-foreground">
                     <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
                     <p>No se encontraron archivos compatibles (PDF, Excel, CSV)</p>
@@ -309,49 +321,56 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
         ) : (
           <div className="space-y-4 mt-6">
             {integrations.map((integration) => (
-              <Card key={integration.id} className="border-border">
+              <Card
+                key={integration.id}
+                className="border-border hover:border-atom/30 transition-all duration-200 hover:shadow-md"
+              >
                 <CardHeader className="pb-3">
-                  <div className="flex items-start gap-3">
-                    <div className="text-2xl">{integration.icon}</div>
+                  <div className="flex items-start gap-4">
+                    <div className="text-3xl">{integration.icon}</div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <CardTitle className="text-base font-montserrat font-semibold">{integration.name}</CardTitle>
+                      <div className="flex items-center gap-3 mb-2">
+                        <CardTitle className="text-lg font-montserrat font-semibold text-foreground">
+                          {integration.name}
+                        </CardTitle>
                         {integration.connected && (
-                          <Badge variant="outline" className="text-xs border-green-500 text-green-600">
+                          <Badge variant="outline" className="text-xs border-green-500 text-green-600 bg-green-50">
                             Conectado
                           </Badge>
                         )}
                       </div>
-                      <CardDescription className="text-xs text-muted-foreground">
+                      <CardDescription className="text-sm text-muted-foreground font-inter">
                         {integration.category}
                       </CardDescription>
                     </div>
                   </div>
                 </CardHeader>
                 <CardContent className="pt-0">
-                  <p className="text-sm text-muted-foreground mb-4">{integration.description}</p>
+                  <p className="text-sm text-muted-foreground mb-6 font-inter leading-relaxed">
+                    {integration.description}
+                  </p>
 
                   <div className="flex justify-end">
                     {integration.connecting ? (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
                         <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleCancel(integration.id)}
-                          className="text-red-600 border-red-200 hover:bg-red-50"
+                          className="text-red-600 border-red-200 hover:bg-red-50 font-medium"
                         >
                           CANCELAR
                         </Button>
                         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                          Conectando...
+                          <Loader2 className="h-4 w-4 animate-spin text-atom-primary" />
+                          <span className="font-medium">Conectando...</span>
                         </div>
                       </div>
                     ) : integration.connected ? (
                       <Button
                         variant="outline"
                         size="sm"
-                        className="border-green-200 text-green-600 hover:bg-green-50 bg-transparent"
+                        className="border-green-200 text-green-600 hover:bg-green-50 bg-green-50/50 font-medium"
                         disabled
                       >
                         CONECTADO
@@ -360,7 +379,7 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
                       <Button
                         size="sm"
                         onClick={() => handleConnect(integration.id)}
-                        className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        className="gradient-atom hover:opacity-90 text-white font-medium px-6"
                       >
                         CONECTAR
                       </Button>
