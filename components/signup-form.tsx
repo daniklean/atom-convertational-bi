@@ -84,6 +84,7 @@ export function SignupForm() {
               required
               className="w-full"
               disabled={isLoading}
+              suppressHydrationWarning={true}
             />
           </div>
 
