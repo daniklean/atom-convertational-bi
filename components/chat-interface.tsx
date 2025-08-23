@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useRef, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -25,6 +24,7 @@ import {
 } from "lucide-react"
 import { IntegrationsModal } from "@/components/integrations-modal"
 import { useUserStore } from "@/lib/store"
+import { useRouter } from "next/navigation"
 
 interface Message {
   id: string
@@ -75,6 +75,7 @@ export function ChatInterface() {
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const { user, logout } = useUserStore()
+  const router = useRouter()
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -158,6 +159,7 @@ export function ChatInterface() {
 
   const handleLogout = () => {
     logout()
+    router.push("/signup")
   }
 
   return (

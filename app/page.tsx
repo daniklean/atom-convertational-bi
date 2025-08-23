@@ -1,15 +1,24 @@
 "use client"
 
-import { ChatInterface } from "@/components/chat-interface"
-import { SignupForm } from "@/components/signup-form"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useUserStore } from "@/lib/store"
 
 export default function Home() {
+  const router = useRouter()
   const isAuthenticated = useUserStore((state) => state.isAuthenticated)
 
-  if (!isAuthenticated) {
-    return <SignupForm />
-  }
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push("/chat")
+    } else {
+      router.push("/signup")
+    }
+  }, [isAuthenticated, router])
 
-  return <ChatInterface />
+  return (
+    <div className="min-h-screen bg-background flex items-center justify-center">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
+  )
 }

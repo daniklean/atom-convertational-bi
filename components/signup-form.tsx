@@ -1,8 +1,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useUserStore } from "@/lib/store"
@@ -13,6 +13,7 @@ export function SignupForm() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
   const setUser = useUserStore((state) => state.setUser)
+  const router = useRouter()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -42,6 +43,7 @@ export function SignupForm() {
           id: data.userData.id,
           email: data.userData.email,
         })
+        router.push("/chat")
       } else {
         setError("Error al procesar el registro")
       }
