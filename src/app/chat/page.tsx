@@ -2,8 +2,8 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { ChatInterface } from "@/components/chat-interface"
-import { useUserStore } from "@/lib/store"
+import { ChatInterface } from "@/src/components/chat-interface"
+import { useUserStore } from "@/src/lib/store"
 
 export default function ChatPage() {
   const router = useRouter()
@@ -11,7 +11,7 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!isAuthenticated) {
-      router.push("/signup")
+      router.replace("/signup")
     }
   }, [isAuthenticated, router])
 

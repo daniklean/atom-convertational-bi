@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useUserStore } from "@/lib/store"
+import { useUserStore } from "@/src/lib/store"
 
 export default function Home() {
   const router = useRouter()
@@ -10,9 +10,9 @@ export default function Home() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      router.push("/chat")
+      router.replace("/chat")
     } else {
-      router.push("/signup")
+      router.replace("/signup")
     }
   }, [isAuthenticated, router])
 

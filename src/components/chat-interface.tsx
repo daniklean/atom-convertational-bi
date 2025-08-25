@@ -2,10 +2,10 @@
 
 import type React from "react"
 import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
+import { Button } from "@/src/components/ui/button"
+import { Card, CardContent } from "@/src/components/ui/card"
+import { Textarea } from "@/src/components/ui/textarea"
+import { Badge } from "@/src/components/ui/badge"
 import {
   Send,
   Settings,
@@ -22,9 +22,10 @@ import {
   Bot,
   LogOut,
 } from "lucide-react"
-import { IntegrationsModal } from "@/components/integrations-modal"
-import { useUserStore } from "@/lib/store"
+import { IntegrationsModal } from "@/src/components/integrations-modal"
+import { useUserStore } from "@/src/lib/store"
 import { useRouter } from "next/navigation"
+import { supabase } from "@/src/lib/supabaseClient" 
 
 interface Message {
   id: string
@@ -45,17 +46,8 @@ interface Attachment {
 
 interface DashboardData {
   title: string
-  metrics: Array<{
-    label: string
-    value: string
-    change?: string
-    source?: string
-  }>
-  charts?: Array<{
-    type: "line" | "pie" | "bar"
-    title: string
-    data: any
-  }>
+  metrics: Array<{ label: string; value: string; change?: string; source?: string }>
+  charts?: Array<{ type: "line" | "pie" | "bar"; title: string; data: any }>
 }
 
 export function ChatInterface() {
@@ -74,6 +66,7 @@ export function ChatInterface() {
   const [showIntegrations, setShowIntegrations] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
   const { user, logout } = useUserStore()
   const router = useRouter()
 
@@ -101,7 +94,7 @@ export function ChatInterface() {
     setAttachments([])
     setIsLoading(true)
 
-    // Simulate AI response with dashboard data
+    // Simulación de respuesta de IA con dashboard
     setTimeout(() => {
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
@@ -157,9 +150,10 @@ export function ChatInterface() {
     return <File className="h-4 w-4" />
   }
 
-  const handleLogout = () => {
-    logout()
-    router.push("/signup")
+  const handleLogout = async () => {
+    await supabase.auth.signOut() // 🔑 Cierra sesión en Supabase
+    logout() // 🔒 Limpia Zustand
+    router.replace("/signup") // 🔄 Redirige
   }
 
   return (
@@ -176,7 +170,6 @@ export function ChatInterface() {
               <p className="text-sm text-muted-foreground font-inter">Chat Conversacional</p>
             </div>
           </div>
-
           <div className="flex items-center gap-3">
             {user && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted px-3 py-2 rounded-lg">
@@ -208,14 +201,17 @@ export function ChatInterface() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-gradient-to-b from-background to-muted/20">
+        {/* mensajes */}
         {messages.map((message) => (
-          <div key={message.id} className={`flex gap-4 ${message.type === "user" ? "justify-end" : "justify-start"}`}>
+          <div
+            key={message.id}
+            className={`flex gap-4 ${message.type === "user" ? "justify-end" : "justify-start"}`}
+          >
             {message.type === "assistant" && (
               <div className="w-10 h-10 rounded-full gradient-atom flex items-center justify-center flex-shrink-0 shadow-md">
                 <Bot className="h-5 w-5 text-white" />
               </div>
             )}
-
             <div className={`max-w-[75%] ${message.type === "user" ? "order-first" : ""}`}>
               <Card
                 className={`shadow-md border-0 ${
@@ -225,8 +221,10 @@ export function ChatInterface() {
                 }`}
               >
                 <CardContent className="p-4">
-                  <p className="text-sm leading-relaxed whitespace-pre-wrap font-inter">{message.content}</p>
-
+                  <p className="text-sm leading-relaxed whitespace-pre-wrap font-inter">
+                    {message.content}
+                  </p>
+                  {/* Adjuntos */}
                   {message.attachments && message.attachments.length > 0 && (
                     <div className="mt-2 space-y-2">
                       {message.attachments.map((attachment) => (
@@ -238,76 +236,79 @@ export function ChatInterface() {
                       ))}
                     </div>
                   )}
-
+                  {/* Dashboard */}
                   {message.dashboardData && (
                     <div className="mt-4 space-y-4">
                       <div className="flex items-center gap-2">
                         <BarChart3 className="h-5 w-5 text-atom-primary" />
-                        <span className="font-semibold text-base font-montserrat">{message.dashboardData.title}</span>
+                        <span className="font-semibold text-base font-montserrat">
+                          {message.dashboardData.title}
+                        </span>
                       </div>
-
                       <div className="grid grid-cols-2 gap-3">
                         {message.dashboardData.metrics.map((metric, index) => (
                           <div key={index} className="bg-muted/50 rounded-lg p-3 border border-border">
-                            <div className="text-xs text-muted-foreground font-medium mb-1">{metric.label}</div>
-                            <div className="font-bold text-lg text-foreground font-montserrat">{metric.value}</div>
-                            {metric.change && <div className="text-xs text-green-600 font-medium">{metric.change}</div>}
+                            <div className="text-xs text-muted-foreground font-medium mb-1">
+                              {metric.label}
+                            </div>
+                            <div className="font-bold text-lg text-foreground font-montserrat">
+                              {metric.value}
+                            </div>
+                            {metric.change && (
+                              <div className="text-xs text-green-600 font-medium">{metric.change}</div>
+                            )}
                             {metric.source && (
-                              <Badge variant="outline" className="text-xs mt-2 border-atom text-atom-primary">
+                              <Badge
+                                variant="outline"
+                                className="text-xs mt-2 border-atom text-atom-primary"
+                              >
                                 {metric.source}
                               </Badge>
                             )}
                           </div>
                         ))}
                       </div>
-
                       <div className="flex flex-wrap gap-2 pt-3">
                         <Button
                           size="sm"
                           variant="outline"
                           className="gap-1 text-xs hover:bg-atom-light hover:border-atom hover:text-atom-primary bg-transparent"
                         >
-                          <FileText className="h-3 w-3" />
-                          Ver datos
+                          <FileText className="h-3 w-3" /> Ver datos
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           className="gap-1 text-xs hover:bg-atom-light hover:border-atom hover:text-atom-primary bg-transparent"
                         >
-                          <BarChart3 className="h-3 w-3" />
-                          Ver dashboard
+                          <BarChart3 className="h-3 w-3" /> Ver dashboard
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           className="gap-1 text-xs hover:bg-atom-light hover:border-atom hover:text-atom-primary bg-transparent"
                         >
-                          <Download className="h-3 w-3" />
-                          Descargar
+                          <Download className="h-3 w-3" /> Descargar
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           className="gap-1 text-xs hover:bg-atom-light hover:border-atom hover:text-atom-primary bg-transparent"
                         >
-                          <Share2 className="h-3 w-3" />
-                          Compartir
+                          <Share2 className="h-3 w-3" /> Compartir
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           className="gap-1 text-xs hover:bg-atom-light hover:border-atom hover:text-atom-primary bg-transparent"
                         >
-                          <Copy className="h-3 w-3" />
-                          Copiar
+                          <Copy className="h-3 w-3" /> Copiar
                         </Button>
                       </div>
                     </div>
                   )}
                 </CardContent>
               </Card>
-
               <div className="text-xs text-muted-foreground mt-2 px-2 font-inter">
                 {message.timestamp.toLocaleTimeString("es-ES", {
                   hour: "2-digit",
@@ -315,7 +316,6 @@ export function ChatInterface() {
                 })}
               </div>
             </div>
-
             {message.type === "user" && (
               <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0 shadow-md">
                 <User className="h-5 w-5 text-muted-foreground" />
@@ -323,7 +323,7 @@ export function ChatInterface() {
             )}
           </div>
         ))}
-
+        {/* Loader */}
         {isLoading && (
           <div className="flex gap-3 justify-start">
             <div className="w-10 h-10 rounded-full gradient-atom flex items-center justify-center flex-shrink-0">
@@ -343,7 +343,6 @@ export function ChatInterface() {
             </Card>
           </div>
         )}
-
         <div ref={messagesEndRef} />
       </div>
 
@@ -352,10 +351,15 @@ export function ChatInterface() {
         {attachments.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
             {attachments.map((attachment) => (
-              <div key={attachment.id} className="flex items-center gap-2 bg-muted rounded-md px-2 py-1">
+              <div
+                key={attachment.id}
+                className="flex items-center gap-2 bg-muted rounded-md px-2 py-1"
+              >
                 {getFileIcon(attachment.type)}
                 <span className="text-xs">{attachment.name}</span>
-                <span className="text-xs text-muted-foreground">({formatFileSize(attachment.size)})</span>
+                <span className="text-xs text-muted-foreground">
+                  ({formatFileSize(attachment.size)})
+                </span>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -368,7 +372,6 @@ export function ChatInterface() {
             ))}
           </div>
         )}
-
         <div className="flex gap-3">
           <div className="flex-1 relative">
             <Textarea
@@ -400,7 +403,6 @@ export function ChatInterface() {
             <Send className="h-5 w-5" />
           </Button>
         </div>
-
         <input
           ref={fileInputRef}
           type="file"
@@ -411,6 +413,7 @@ export function ChatInterface() {
         />
       </div>
 
+      {/* Modal Integraciones */}
       <IntegrationsModal open={showIntegrations} onOpenChange={setShowIntegrations} />
     </div>
   )
