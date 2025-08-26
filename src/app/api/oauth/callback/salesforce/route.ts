@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { createServerClient } from "@/src/lib/supabaseServer";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,6 +9,8 @@ const supabase = createClient(
 
 export async function GET(req: NextRequest) {
   try {
+    const supabase = createServerClient();
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
     const { searchParams } = new URL(req.url);
     const code = searchParams.get("code")
 
@@ -38,6 +41,7 @@ export async function GET(req: NextRequest) {
     const { access_token, refresh_token, instance_url, id } = tokenData;
     const username = 'atom';
     const password = '1234';
+    const integration_type = "salesforce"
     const encodedCredentials = btoa(`${username}:${password}`);
 
     // 2️⃣ Enviar a tu webhook de n8n
@@ -55,7 +59,6 @@ export async function GET(req: NextRequest) {
     });
 
     // 3️⃣ Guardar en Supabase (tabla `salesforce_tokens`)
-    // ⚠️ Debes crear la tabla en supabase:
     // create table salesforce_tokens (
     //   id uuid default gen_random_uuid() primary key,
     //   user_id uuid references auth.users(id),
@@ -65,18 +68,19 @@ export async function GET(req: NextRequest) {
     //   created_at timestamptz default now()
     // );
 
-    //const getUserByEmail = await supabase.from("user").select()
-
     //const { error } = await supabase.from("user_tokens").insert({
-      //user_id:  || null,
-      //access_token,
+      //token: access_token,
       //refresh_token,
       //instance_url,
+      //integration_type,
+      //user_id: user?.id || null,
     //});
 
     //if (error) {
       //console.error("Error saving to Supabase:", error);
     //}
+
+    console.log(`access_token: ${access_token}`)
 
     return NextResponse.redirect(
       `${process.env.NEXT_PUBLIC_APP_URL}/chat/?provider=salesforce&status=success`
