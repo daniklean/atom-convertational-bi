@@ -59,6 +59,14 @@ export function IntegrationsModal({ open, onOpenChange }: IntegrationsModalProps
       icon: "🔵",
       oauthUrl: `/api/oauth/salesforce`,
     },
+    {
+    id: "hubspot",
+    name: "HubSpot",
+    description: "Integra HubSpot para sincronizar tus deals, contactos y pipelines de ventas.",
+    category: "CRM",
+    icon: "🟠",
+    oauthUrl: `/api/oauth/hubspot`, // 👈 apunta a tu route.ts de HubSpot
+  },
   ]
 
   // ✅ Cuando vuelva de OAuth callback
